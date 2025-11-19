@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Momo的电影拼接台词 V3.2 (进阶版)</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --accent: #007aff;
+            --text-main: #fff;
+            --text-dim: #888;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h2 { font-weight: 300; letter-spacing: 1px; margin-bottom: 30px; opacity: 0.9; }
+
+        .container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        /* --- 左侧控制面板 --- */
+        .controls {
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 12px;
+            width: 340px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        
+        label { 
+            font-size: 13px; 
+            color: #ccc; 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .val-display { color: var(--accent); font-weight: bold; font-size: 12px; }
+
+        /* 滑块样式 */
+        input[type="range"] { 
+            width: 100%; 
+            cursor: pointer; 
+            -webkit-appearance: none;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* 颜色选择器组合 */
+        .color-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+            padding: 0;
+            background: none;
+            border: 1px solid #666;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; }
+
+        .hex-input {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 5px 8px;
+            border-radius: 4px;
+            width: 80px;
+            font-family: monospace;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        .hex-input:focus { outline: none; border-color: var(--accent); }
+
+        /* 复选框样式 */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+        input[type="checkbox"] {
+            width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;
+        }
+
+        textarea {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 12px;
+            height: 150px;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.4;
+            font-family: monospace;
+        }
+        textarea:focus { outline: none; border-color: var(--accent); }
+
+        .file-btn {
+            background: #333;
+            border: 1px dashed #666;
+            color: #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-btn:hover { background: #444; border-color: #888; }
+        input[type="file"] { display: none; }
+
+        .download-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+        .download-btn:hover { filter: brightness(1.1); }
+
+        /* --- 右侧预览区 --- */
+        #preview-wrapper {
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #result-canvas {
+            background: #000;
+            width: 100%;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            line-height: 0; 
+            user-select: none;
+        }
+
+        .frame {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .frame img {
+            width: 100%;
+            position: absolute;
+            left: 0;
+        }
+
+        /* 字幕层 */
+        .subtitle-layer {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            line-height: 1.3 !important; 
+        }
+
+        .sub-line {
+            font-family: "Microsoft YaHei", "Heiti SC", sans-serif;
+            font-weight: 900; 
+            text-shadow: 
+                1.5px 1.5px 0 #000, -1.5px -1.5px 0 #000,  
+                1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000,
+                0px 2px 5px rgba(0,0,0,0.8);
+            margin: 0;
+            padding: 0 10px;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            position: fixed; top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            z-index: 999;
+            display: none;
+            justify-content: center; align-items: center;
+            flex-direction: column;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #333;
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body>
+
+    <div class="loading" id="loading-mask">
+        <div class="spinner"></div>
+        <div>正在生成高清长图...</div>
+    </div>
+
+    <h2>🎞️ 电影感字幕拼接 V3.2</h2>
+
+    <div class="container">
+        <div class="controls">
+            
+            <div class="section-title">1. 图像源 (Source)</div>
+            <div class="file-btn" onclick="document.getElementById('file-input').click()">
+                <span id="file-name">📂 点击上传底图</span>
+                <input type="file" id="file-input" accept="image/*">
+            </div>
+
+            <div class="control-group">
+                <label>顶部裁剪 (Top Crop): <span class="val-display" id="val-crop-top">0%</span></label>
+                <input type="range" id="crop-top" min="0" max="40" value="0" step="1">
+            </div>
+            <div class="control-group">
+                <label>底部裁剪 (Bottom Crop): <span class="val-display" id="val-crop-bottom">0%</span></label>
+                <input type="range" id="crop-bottom" min="0" max="60" value="0" step="1">
+            </div>
+
+            <div class="section-title">2. 拼接与文字 (Layout & Text)</div>
+            
+            <div class="control-group">
+                <label>切片高度 (Slice Height): <span class="val-display" id="val-slice-h">13%</span></label>
+                <input type="range" id="slice-height" min="5" max="40" value="15" step="1">
+            </div>
+
+            <div class="control-group">
+                <label>中文字号 (CN Size): <span class="val-display" id="val-font-cn">32px</span></label>
+                <input type="range" id="font-size-cn" min="14" max="80" value="32">
+            </div>
+            <div class="control-group">
+                <label>英文字号 (EN Size): <span class="val-display" id="val-font-en">16px</span></label>
+                <input type="range" id="font-size-en" min="10" max="60" value="18">
+            </div>
+
+            <div class="control-group">
+                <label>文字底部位置 (Bottom Pos): <span class="val-display" id="val-text-pos">9px</span></label>
+                <input type="range" id="text-bottom" min="0" max="100" value="9">
+            </div>
+            
+            <div class="control-group">
+                <label>字幕颜色 (Color):</label>
+                <div class="color-wrapper">
+                    <input type="color" id="text-color-picker" value="#ffae00">
+                    <input type="text" id="text-color-hex" class="hex-input" value="#ffae00">
+                </div>
+            </div>
+
+            <div class="section-title">3. 内容 (Content)</div>
+            
+            <label class="checkbox-wrapper">
+                <input type="checkbox" id="split-by-line">
+                <span>按行分割 (单行即切片)</span>
+            </label>
+
+            <textarea id="text-input" placeholder="输入字幕..."></textarea>
+
+            <button class="download-btn" onclick="generateImage()">⬇️ 保存图片</button>
+        </div>
+
+        <div id="preview-wrapper">
+            <div id="result-canvas"></div>
+        </div>
+    </div>
+
+    <script>
+        // 状态变量
+        const state = {
+            imgSrc: null,
+            imgWidth: 0,
+            imgHeight: 0,
+            cropTop: 0,
+            cropBottom: 0,
+            sliceHeight: 15, 
+            fontSizeCN: 32,   // 中文默认 32
+            fontSizeEN: 18,   // 英文默认 18
+            textBottom: 9, 
+            textColor: '#ffffff',
+            splitByLine: false,
+            text: "营销号追求流量和点击率无可厚非\nI understand that marketing accounts are chasing traffic and clicks,\n\n但也不要这样胡编乱造让我背锅\nBut please don't fabricate things and make me take the blame for it.\n\n我也呼吁大家以后在看到类似的图片时\nI also urge everyone, when you see similar images in the future,"
+        };
+
+        // DOM 元素
+        const els = {
+            fileInput: document.getElementById('file-input'),
+            fileName: document.getElementById('file-name'),
+            textInput: document.getElementById('text-input'),
+            canvas: document.getElementById('result-canvas'),
+            loading: document.getElementById('loading-mask'),
+            splitByLine: document.getElementById('split-by-line'),
+            colorPicker: document.getElementById('text-color-picker'),
+            colorHex: document.getElementById('text-color-hex'),
+            inputs: {
+                cropTop: document.getElementById('crop-top'),
+                cropBottom: document.getElementById('crop-bottom'),
+                sliceHeight: document.getElementById('slice-height'),
+                fontSizeCN: document.getElementById('font-size-cn'),
+                fontSizeEN: document.getElementById('font-size-en'),
+                textBottom: document.getElementById('text-bottom')
+            },
+            displays: {
+                cropTop: document.getElementById('val-crop-top'),
+                cropBottom: document.getElementById('val-crop-bottom'),
+                sliceHeight: document.getElementById('val-slice-h'),
+                fontSizeCN: document.getElementById('val-font-cn'),
+                fontSizeEN: document.getElementById('val-font-en'),
+                textBottom: document.getElementById('val-text-pos')
+            }
+        };
+
+        // 初始化
+        els.textInput.value = state.text;
+        
+        // 1. 图片加载
+        els.fileInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            els.fileName.innerText = "📄 " + file.name;
+            
+            const reader = new FileReader();
+            reader.onload = evt => {
+                const img = new Image();
+                img.onload = () => {
+                    state.imgSrc = img.src;
+                    state.imgWidth = img.width;
+                    state.imgHeight = img.height;
+                    render();
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 2. 监听滑块
+        Object.keys(els.inputs).forEach(key => {
+            els.inputs[key].addEventListener('input', e => {
+                let val = parseInt(e.target.value);
+                state[key] = val;
+                let suffix = (key.includes('fontSize') || key === 'textBottom') ? 'px' : '%';
+                els.displays[key].innerText = val + suffix;
+                render();
+            });
+        });
+
+        // 3. 监听文本输入
+        els.textInput.addEventListener('input', e => {
+            state.text = e.target.value;
+            render();
+        });
+
+        els.splitByLine.addEventListener('change', e => {
+            state.splitByLine = e.target.checked;
+            render();
+        });
+
+        // 4. 颜色同步逻辑
+        els.colorPicker.addEventListener('input', e => {
+            state.textColor = e.target.value;
+            els.colorHex.value = e.target.value; // 同步到 hex 输入框
+            render();
+        });
+
+        els.colorHex.addEventListener('input', e => {
+            let val = e.target.value;
+            if (val.startsWith('#') && (val.length === 7 || val.length === 4)) {
+                state.textColor = val;
+                els.colorPicker.value = val; // 同步到 picker
+                render();
+            }
+        });
+
+        // 5. 核心渲染逻辑
+        function render() {
+            if (!state.imgSrc) {
+                els.canvas.innerHTML = '<div style="padding:40px; color:#666; text-align:center;">请先上传图片</div>';
+                return;
+            }
+
+            els.canvas.innerHTML = ''; 
+            
+            // 分割逻辑
+            let groups;
+            if (state.splitByLine) {
+                groups = state.text.split('\n').filter(line => line.trim() !== '');
+            } else {
+                groups = state.text.split(/\n\s*\n/); 
+            }
+
+            // 剪裁计算
+            const cropTopPct = state.cropTop / 100;
+            const cropBottomPct = state.cropBottom / 100;
+            if (cropTopPct + cropBottomPct >= 0.95) return;
+
+            const aspectRatio = state.imgHeight / state.imgWidth;
+            const visibleRatio = 1 - cropTopPct - cropBottomPct;
+            const firstFramePadding = (aspectRatio * visibleRatio) * 100; 
+            const slicePctOfVisible = state.sliceHeight / 100;
+            const slicePadding = (aspectRatio * visibleRatio * slicePctOfVisible) * 100;
+
+            groups.forEach((groupText, index) => {
+                if (!groupText.trim() && index > 0 && !state.splitByLine) return;
+
+                const frame = document.createElement('div');
+                frame.className = 'frame';
+                
+                const img = document.createElement('img');
+                img.src = state.imgSrc;
+
+                const subLayer = document.createElement('div');
+                subLayer.className = 'subtitle-layer';
+                subLayer.style.bottom = state.textBottom + 'px';
+
+                // 渲染文字行 (智能字号判断)
+                const lines = groupText.split('\n');
+                lines.forEach(line => {
+                    if(!line.trim()) return;
+                    const p = document.createElement('p');
+                    p.className = 'sub-line';
+                    p.textContent = line;
+                    
+                    // 核心逻辑：如果包含中文，用大号字；否则用小号字
+                    if (/[\u4e00-\u9fa5]/.test(line)) {
+                        p.style.fontSize = state.fontSizeCN + 'px';
+                    } else {
+                        p.style.fontSize = state.fontSizeEN + 'px';
+                    }
+                    
+                    p.style.color = state.textColor;
+                    subLayer.appendChild(p);
+                });
+
+                if (index === 0) {
+                    // 第一帧
+                    frame.style.paddingBottom = firstFramePadding + '%';
+                    img.style.transform = `translateY(-${state.cropTop}%)`;
+                } else {
+                    // 切片
+                    frame.style.paddingBottom = slicePadding + '%';
+                    const sliceHeightRealPct = visibleRatio * slicePctOfVisible;
+                    const translateY = (1 - cropBottomPct - sliceHeightRealPct) * 100;
+                    img.style.transform = `translateY(-${translateY}%)`;
+                }
+
+                frame.appendChild(img);
+                frame.appendChild(subLayer);
+                els.canvas.appendChild(frame);
+            });
+        }
+
+        // 6. 下载
+        function generateImage() {
+            if (!state.imgSrc) return;
+            els.loading.style.display = 'flex';
+
+            setTimeout(() => {
+                const target = els.canvas;
+                html2canvas(target, {
+                    scale: 2.5, 
+                    backgroundColor: "#000",
+                    useCORS: true,
+                    scrollY: -window.scrollY
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'Momo_Subtitle_' + Date.now() + '.jpg';
+                    link.href = canvas.toDataURL('image/jpeg', 0.92);
+                    link.click();
+                    els.loading.style.display = 'none';
+                }).catch(err => {
+                    console.error(err);
+                    alert("生成失败，请重试");
+                    els.loading.style.display = 'none';
+                });
+            }, 100);
+        }
+    </script>
+</body>
+</html>
