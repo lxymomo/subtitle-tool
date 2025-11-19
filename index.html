@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Momo的电影拼接台词 V3.2 (进阶版)</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+    <title>电影拼接台词</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -24,7 +25,7 @@
             margin: 0;
         }
 
-        h2 { font-weight: 300; letter-spacing: 1px; margin-bottom: 30px; opacity: 0.9; }
+        h2 { font-weight: 300; letter-spacing: 1px; margin-bottom: 30px; opacity: 0.9; display: flex; align-items: center; gap: 10px;}
 
         .container {
             display: flex;
@@ -269,7 +270,7 @@
         <div>正在生成高清长图...</div>
     </div>
 
-    <h2>🎞️ 电影感字幕拼接 V3.2</h2>
+    <h2>🎬 电影感字幕拼接 V3.3</h2>
 
     <div class="container">
         <div class="controls">
@@ -285,14 +286,14 @@
                 <input type="range" id="crop-top" min="0" max="40" value="0" step="1">
             </div>
             <div class="control-group">
-                <label>底部裁剪 (Bottom Crop): <span class="val-display" id="val-crop-bottom">0%</span></label>
-                <input type="range" id="crop-bottom" min="0" max="60" value="0" step="1">
+                <label>底部裁剪 (Bottom Crop): <span class="val-display" id="val-crop-bottom">37%</span></label>
+                <input type="range" id="crop-bottom" min="0" max="60" value="37" step="1">
             </div>
 
             <div class="section-title">2. 拼接与文字 (Layout & Text)</div>
             
             <div class="control-group">
-                <label>切片高度 (Slice Height): <span class="val-display" id="val-slice-h">13%</span></label>
+                <label>切片高度 (Slice Height): <span class="val-display" id="val-slice-h">15%</span></label>
                 <input type="range" id="slice-height" min="5" max="40" value="15" step="1">
             </div>
 
@@ -301,7 +302,7 @@
                 <input type="range" id="font-size-cn" min="14" max="80" value="32">
             </div>
             <div class="control-group">
-                <label>英文字号 (EN Size): <span class="val-display" id="val-font-en">16px</span></label>
+                <label>英文字号 (EN Size): <span class="val-display" id="val-font-en">18px</span></label>
                 <input type="range" id="font-size-en" min="10" max="60" value="18">
             </div>
 
@@ -342,12 +343,12 @@
             imgWidth: 0,
             imgHeight: 0,
             cropTop: 0,
-            cropBottom: 0,
-            sliceHeight: 13, 
-            fontSizeCN: 32,  
-            fontSizeEN: 16, 
+            cropBottom: 37, // 默认 37%
+            sliceHeight: 15, 
+            fontSizeCN: 32,   
+            fontSizeEN: 18, 
             textBottom: 9, 
-            textColor: '#ffae00',
+            textColor: '#ffae00', // 默认黄
             splitByLine: false,
             text: "营销号追求流量和点击率无可厚非\nI understand that marketing accounts are chasing traffic and clicks,\n\n但也不要这样胡编乱造让我背锅\nBut please don't fabricate things and make me take the blame for it.\n\n我也呼吁大家以后在看到类似的图片时\nI also urge everyone, when you see similar images in the future,"
         };
