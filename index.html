@@ -4,261 +4,164 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-    <title>电影拼接台词</title>
+    <title>Momo的电影拼接 V3.8 (定制默认值版)</title>
     <style>
+        /* --- 字体定义 --- */
+        @font-face {
+            font-family: 'VerticalFont';
+            src: url('fonts/HYLaoZiHaoW.ttf') format('truetype');
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'SubtitleFont';
+            src: url('fonts/HYZhongKaiJ.ttf') format('truetype');
+            font-display: swap;
+        }
+
         :root {
             --bg-color: #121212;
             --panel-bg: #1e1e1e;
             --accent: #007aff;
             --text-main: #fff;
             --text-dim: #888;
+            --border: #333;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
             margin: 0;
+            padding: 20px;
+            height: 100vh; 
+            overflow: hidden; 
         }
 
-        h2 { font-weight: 300; letter-spacing: 1px; margin-bottom: 30px; opacity: 0.9; display: flex; align-items: center; gap: 10px;}
-
-        .container {
-            display: flex;
-            gap: 40px;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
-            max-width: 1400px;
+        h2 { 
+            position: fixed; top: 20px; left: 25px; margin: 0; 
+            font-weight: 300; letter-spacing: 1px; font-size: 18px; 
+            z-index: 100; display: flex; align-items: center; gap: 8px;
         }
 
-        /* --- 左侧控制面板 --- */
-        .controls {
-            background: var(--panel-bg);
-            padding: 25px;
-            border-radius: 12px;
-            width: 340px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            position: sticky;
-            top: 20px;
+        .app-container {
+            display: flex; height: calc(100vh - 40px); gap: 20px; margin-top: 40px; 
+        }
+
+        /* 左侧面板 */
+        .panel-left {
+            width: 320px; background: var(--panel-bg); padding: 20px;
+            border-radius: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;
+        }
+
+        /* 中间预览 */
+        .panel-center {
+            flex: 1; background: #000; border-radius: 12px;
+            display: flex; justify-content: center; align-items: flex-start; 
+            overflow-y: auto; padding: 40px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* 右侧编辑 */
+        .panel-right {
+            width: 350px; background: var(--panel-bg); padding: 20px;
+            border-radius: 12px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;
         }
 
         .section-title {
-            font-size: 12px;
-            color: var(--text-dim);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 5px;
-            margin-bottom: 5px;
+            font-size: 11px; color: var(--text-dim); font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border);
+            padding-bottom: 8px; margin-bottom: 5px; margin-top: 10px;
         }
+        .section-title:first-child { margin-top: 0; }
 
-        .control-group { display: flex; flex-direction: column; gap: 8px; }
-        
-        label { 
-            font-size: 13px; 
-            color: #ccc; 
-            display: flex; 
-            justify-content: space-between;
-            align-items: center;
-        }
-        
+        .control-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 12px; color: #ccc; display: flex; justify-content: space-between; align-items: center; }
         .val-display { color: var(--accent); font-weight: bold; font-size: 12px; }
 
-        /* 滑块样式 */
         input[type="range"] { 
-            width: 100%; 
-            cursor: pointer; 
-            -webkit-appearance: none;
-            height: 4px;
-            background: #444;
-            border-radius: 2px;
-            outline: none;
+            width: 100%; cursor: pointer; -webkit-appearance: none; height: 4px;
+            background: #444; border-radius: 2px; outline: none;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--accent);
-            border: 2px solid #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+            background: var(--accent); border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
-        /* 颜色选择器组合 */
-        .color-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .color-wrapper { display: flex; align-items: center; gap: 10px; }
         input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            overflow: hidden;
-            cursor: pointer;
-            padding: 0;
-            background: none;
-            border: 1px solid #666;
+            -webkit-appearance: none; border: none; width: 24px; height: 24px;
+            border-radius: 50%; overflow: hidden; cursor: pointer; padding: 0; background: none; border: 1px solid #666;
         }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: none; }
-
-        .hex-input {
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 5px 8px;
-            border-radius: 4px;
-            width: 80px;
-            font-family: monospace;
-            font-size: 13px;
-            text-transform: uppercase;
+        .font-upload-btn {
+            font-size: 11px; background: #2a2a2a; border: 1px solid #444; color: #aaa;
+            padding: 4px 8px; border-radius: 4px; cursor: pointer; text-align: center;
         }
-        .hex-input:focus { outline: none; border-color: var(--accent); }
-
-        /* 复选框样式 */
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            background: #2a2a2a;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #333;
-        }
-        input[type="checkbox"] {
-            width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;
-        }
+        .font-upload-btn:hover { border-color: var(--accent); color: #fff; }
 
         textarea {
-            background: #2a2a2a;
-            color: #fff;
-            border: 1px solid #444;
-            border-radius: 6px;
-            padding: 12px;
-            height: 150px;
-            resize: vertical;
-            font-size: 14px;
-            line-height: 1.4;
-            font-family: monospace;
+            background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 8px; padding: 10px;
+            resize: none; font-size: 13px; line-height: 1.5; font-family: monospace;
         }
         textarea:focus { outline: none; border-color: var(--accent); }
 
+        .vertical-input { height: 100px; font-size: 12px; }
+        .main-input { flex: 1; font-size: 14px; }
+
         .file-btn {
-            background: #333;
-            border: 1px dashed #666;
-            color: #ddd;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: #333; border: 1px dashed #666; color: #ddd; padding: 12px;
+            border-radius: 8px; text-align: center; cursor: pointer; font-size: 13px; transition: all 0.2s;
         }
         .file-btn:hover { background: #444; border-color: #888; }
         input[type="file"] { display: none; }
 
         .download-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
+            background: var(--accent); color: white; border: none; padding: 15px;
+            border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
         }
         .download-btn:hover { filter: brightness(1.1); }
 
-        /* --- 右侧预览区 --- */
-        #preview-wrapper {
-            flex: 1;
-            min-width: 300px;
-            max-width: 600px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .radio-group { display: flex; flex-direction: column; gap: 8px; background: #2a2a2a; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        .radio-item { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; color: #ddd; }
+        .radio-item input { accent-color: var(--accent); }
+        .clean-toggle { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #aaa; cursor: pointer; margin-top: 5px; }
+        .clean-toggle input { accent-color: #34c759; }
 
-        #result-canvas {
-            background: #000;
-            width: 100%;
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
-            line-height: 0; 
-            user-select: none;
-        }
-
-        .frame {
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .frame img {
-            width: 100%;
-            position: absolute;
-            left: 0;
-        }
-
-        /* 字幕层 */
+        #result-canvas { background: #000; width: 100%; max-width: 600px; box-shadow: 0 0 40px rgba(0,0,0,0.8); line-height: 0; user-select: none; }
+        .frame { position: relative; overflow: hidden; width: 100%; }
+        .frame img { width: 100%; position: absolute; left: 0; }
+        
         .subtitle-layer {
-            position: absolute;
-            bottom: 10px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            pointer-events: none;
-            line-height: 1.3 !important; 
+            position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center;
+            z-index: 10; display: flex; flex-direction: column; align-items: center; pointer-events: none; line-height: 1.3 !important; 
         }
-
         .sub-line {
-            font-family: "Microsoft YaHei", "Heiti SC", sans-serif;
+            font-family: "SubtitleFont", "Microsoft YaHei", "Heiti SC", sans-serif; 
             font-weight: 900; 
-            text-shadow: 
-                1.5px 1.5px 0 #000, -1.5px -1.5px 0 #000,  
-                1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000,
-                0px 2px 5px rgba(0,0,0,0.8);
-            margin: 0;
-            padding: 0 10px;
-            white-space: pre-wrap;
+            text-shadow: 1.5px 1.5px 0 #000, -1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 0px 2px 5px rgba(0,0,0,0.8);
+            margin: 0; padding: 0 10px; white-space: pre-wrap;
         }
 
-        .loading {
-            position: fixed; top:0; left:0; right:0; bottom:0;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            z-index: 999;
-            display: none;
-            justify-content: center; align-items: center;
-            flex-direction: column;
+        /* 竖排水印层 */
+        .watermark-layer {
+            position: absolute;
+            z-index: 20;
+            writing-mode: vertical-rl; 
+            text-orientation: upright; 
+            white-space: pre;
+            font-family: "VerticalFont", "Kaiti", "STKaiti", "KaiTi", serif;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            pointer-events: none;
         }
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid #333;
-            border-top: 4px solid var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
+
+        .loading { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.8); color: white; z-index: 999; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
 
     </style>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -267,100 +170,170 @@
 
     <div class="loading" id="loading-mask">
         <div class="spinner"></div>
-        <div>正在生成高清长图...</div>
+        <div>正在生成...</div>
     </div>
 
-    <h2>🎬 电影感字幕拼接 V3.3</h2>
+    <h2>🎬 电影拼接 V3.8</h2>
 
-    <div class="container">
-        <div class="controls">
-            
-            <div class="section-title">1. 图像源 (Source)</div>
+    <div class="app-container">
+        
+        <div class="panel-left">
+            <div class="section-title">1. 图像源</div>
             <div class="file-btn" onclick="document.getElementById('file-input').click()">
-                <span id="file-name">📂 点击上传底图</span>
+                <span id="file-name">📂 上传底图</span>
                 <input type="file" id="file-input" accept="image/*">
             </div>
 
+            <div class="section-title">2. 竖排水印 (Vertical Text)</div>
             <div class="control-group">
-                <label>顶部裁剪 (Top Crop): <span class="val-display" id="val-crop-top">0%</span></label>
-                <input type="range" id="crop-top" min="0" max="40" value="0" step="1">
-            </div>
-            <div class="control-group">
-                <label>底部裁剪 (Bottom Crop): <span class="val-display" id="val-crop-bottom">37%</span></label>
-                <input type="range" id="crop-bottom" min="0" max="60" value="37" step="1">
+                <div class="font-upload-btn" onclick="document.getElementById('font-v-input').click()">
+                    📥 加载竖排字体 (HYLaoZiHaoW.ttf)
+                </div>
+                <input type="file" id="font-v-input" accept=".ttf,.otf,.woff">
             </div>
 
-            <div class="section-title">2. 拼接与文字 (Layout & Text)</div>
+            <textarea id="watermark-input" class="vertical-input">汤海鹏&#10;25年心理咨询经验&#10;两万+个体咨询时数</textarea>
             
             <div class="control-group">
-                <label>切片高度 (Slice Height): <span class="val-display" id="val-slice-h">15%</span></label>
-                <input type="range" id="slice-height" min="5" max="40" value="15" step="1">
+                <label>行间距 (Line Spacing): <span class="val-display" id="val-wm-lh">1.1</span></label>
+                <input type="range" id="wm-lh" min="10" max="30" value="11">
+            </div>
+            <div class="control-group">
+                <label>字间距 (Letter Spacing): <span class="val-display" id="val-wm-ls">0px</span></label>
+                <input type="range" id="wm-ls" min="0" max="20" value="0">
             </div>
 
             <div class="control-group">
-                <label>中文字号 (CN Size): <span class="val-display" id="val-font-cn">32px</span></label>
+                <label>右边距 (Right X): <span class="val-display" id="val-wm-x">6%</span></label>
+                <input type="range" id="wm-x" min="0" max="100" value="6">
+            </div>
+            <div class="control-group">
+                <label>上边距 (Top Y): <span class="val-display" id="val-wm-y">10%</span></label>
+                <input type="range" id="wm-y" min="0" max="100" value="10">
+            </div>
+            <div class="control-group">
+                <label>水印字号: <span class="val-display" id="val-wm-size">33px</span></label>
+                <input type="range" id="wm-size" min="10" max="60" value="33">
+            </div>
+            <div class="control-group">
+                <label>水印颜色:</label>
+                <div class="color-wrapper">
+                    <input type="color" id="wm-color-picker" value="#ffffff">
+                </div>
+            </div>
+
+            <div class="section-title">3. 剪裁与字幕样式</div>
+            <div class="control-group">
+                <label>切片高度: <span class="val-display" id="val-slice-h">15%</span></label>
+                <input type="range" id="slice-height" min="5" max="40" value="15">
+            </div>
+             <div class="control-group">
+                <label>顶部裁剪: <span class="val-display" id="val-crop-top">0%</span></label>
+                <input type="range" id="crop-top" min="0" max="40" value="0">
+            </div>
+            <div class="control-group">
+                <label>底部裁剪: <span class="val-display" id="val-crop-bottom">37%</span></label>
+                <input type="range" id="crop-bottom" min="0" max="60" value="37">
+            </div>
+
+            <div class="control-group" style="margin-top:10px;">
+                 <div class="font-upload-btn" onclick="document.getElementById('font-h-input').click()">
+                    📥 加载字幕字体 (HYZhongKaiJ.ttf)
+                </div>
+                <input type="file" id="font-h-input" accept=".ttf,.otf,.woff">
+            </div>
+
+            <div class="control-group">
+                <label>中文字号: <span class="val-display" id="val-font-cn">32px</span></label>
                 <input type="range" id="font-size-cn" min="14" max="80" value="32">
             </div>
             <div class="control-group">
-                <label>英文字号 (EN Size): <span class="val-display" id="val-font-en">18px</span></label>
+                <label>英文字号: <span class="val-display" id="val-font-en">18px</span></label>
                 <input type="range" id="font-size-en" min="10" max="60" value="18">
             </div>
-
             <div class="control-group">
-                <label>文字底部位置 (Bottom Pos): <span class="val-display" id="val-text-pos">9px</span></label>
+                <label>字幕底距: <span class="val-display" id="val-text-pos">9px</span></label>
                 <input type="range" id="text-bottom" min="0" max="100" value="9">
             </div>
-            
             <div class="control-group">
-                <label>字幕颜色 (Color):</label>
+                <label>字幕颜色:</label>
                 <div class="color-wrapper">
                     <input type="color" id="text-color-picker" value="#ffae00">
                     <input type="text" id="text-color-hex" class="hex-input" value="#ffae00">
                 </div>
             </div>
-
-            <div class="section-title">3. 内容 (Content)</div>
-            
-            <label class="checkbox-wrapper">
-                <input type="checkbox" id="split-by-line">
-                <span>按行分割 (单行即切片)</span>
-            </label>
-
-            <textarea id="text-input" placeholder="输入字幕..."></textarea>
-
-            <button class="download-btn" onclick="generateImage()">⬇️ 保存图片</button>
         </div>
 
-        <div id="preview-wrapper">
+        <div class="panel-center">
             <div id="result-canvas"></div>
         </div>
+
+        <div class="panel-right">
+            <div class="section-title">4. 字幕内容编辑</div>
+            
+            <div class="radio-group">
+                <div class="section-title" style="border:none; margin:0;">分割模式</div>
+                <label class="radio-item">
+                    <input type="radio" name="split-mode" value="paragraph" checked> 默认 (按空行)
+                </label>
+                <label class="radio-item">
+                    <input type="radio" name="split-mode" value="line"> 按 1 行分割
+                </label>
+                <label class="radio-item">
+                    <input type="radio" name="split-mode" value="two-lines"> 按 2 行分割 (双语)
+                </label>
+            </div>
+
+            <label class="clean-toggle">
+                <input type="checkbox" id="auto-clean-md" checked> 粘贴时自动去除 Markdown
+            </label>
+
+            <textarea id="text-input" class="main-input" placeholder="在这里粘贴台词..."></textarea>
+            
+            <button class="download-btn" onclick="generateImage()">⬇️ 保存高清长图</button>
+        </div>
+
     </div>
 
     <script>
-        // 状态变量
-        const state = {
-            imgSrc: null,
-            imgWidth: 0,
-            imgHeight: 0,
-            cropTop: 0,
-            cropBottom: 37, // 默认 37%
-            sliceHeight: 15, 
-            fontSizeCN: 32,   
-            fontSizeEN: 18, 
-            textBottom: 9, 
-            textColor: '#ffae00', // 默认黄
-            splitByLine: false,
-            text: "营销号追求流量和点击率无可厚非\nI understand that marketing accounts are chasing traffic and clicks,\n\n但也不要这样胡编乱造让我背锅\nBut please don't fabricate things and make me take the blame for it.\n\n我也呼吁大家以后在看到类似的图片时\nI also urge everyone, when you see similar images in the future,"
+        const state = { // 默认更改值
+            imgSrc: null, imgWidth: 0, imgHeight: 12,
+            cropTop: 0, cropBottom: 42, sliceHeight: 12, 
+            fontSizeCN: 32, fontSizeEN: 16, textBottom: 9, 
+            textColor: '#ffae00',
+            splitMode: 'paragraph',
+            text: "营销号追求流量和点击率无可厚非\nI understand that marketing accounts are chasing traffic and clicks,\n\n但也不要这样胡编乱造让我背锅\nBut please don't fabricate things and make me take the blame for it.\n\n我也呼吁大家以后在看到类似的图片时\nI also urge everyone, when you see similar images in the future,",
+            // 更新：水印默认状态
+            wmText: "汤海鹏\n25年心理咨询经验\n两万+个体咨询时数",
+            wmX: 4, 
+            wmY: 11, 
+            wmSize: 33, 
+            wmColor: '#ffffff',
+            wmLineHeight: 1.1, 
+            wmLetterSpacing: 0
         };
 
-        // DOM 元素
         const els = {
             fileInput: document.getElementById('file-input'),
             fileName: document.getElementById('file-name'),
+            
+            // 水印控件
+            wmInput: document.getElementById('watermark-input'),
+            wmX: document.getElementById('wm-x'),
+            wmY: document.getElementById('wm-y'),
+            wmSize: document.getElementById('wm-size'),
+            wmColor: document.getElementById('wm-color-picker'),
+            wmLH: document.getElementById('wm-lh'), 
+            wmLS: document.getElementById('wm-ls'), 
+            
+            fontVInput: document.getElementById('font-v-input'),
+            fontHInput: document.getElementById('font-h-input'),
+
             textInput: document.getElementById('text-input'),
             canvas: document.getElementById('result-canvas'),
             loading: document.getElementById('loading-mask'),
-            splitByLine: document.getElementById('split-by-line'),
+            splitRadios: document.getElementsByName('split-mode'),
+            autoCleanMd: document.getElementById('auto-clean-md'),
             colorPicker: document.getElementById('text-color-picker'),
             colorHex: document.getElementById('text-color-hex'),
             inputs: {
@@ -377,26 +350,27 @@
                 sliceHeight: document.getElementById('val-slice-h'),
                 fontSizeCN: document.getElementById('val-font-cn'),
                 fontSizeEN: document.getElementById('val-font-en'),
-                textBottom: document.getElementById('val-text-pos')
+                textBottom: document.getElementById('val-text-pos'),
+                wmX: document.getElementById('val-wm-x'),
+                wmY: document.getElementById('val-wm-y'),
+                wmSize: document.getElementById('val-wm-size'),
+                wmLH: document.getElementById('val-wm-lh'),
+                wmLS: document.getElementById('val-wm-ls')
             }
         };
 
-        // 初始化
         els.textInput.value = state.text;
+        els.wmInput.value = state.wmText;
         
-        // 1. 图片加载
         els.fileInput.addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
             els.fileName.innerText = "📄 " + file.name;
-            
             const reader = new FileReader();
             reader.onload = evt => {
                 const img = new Image();
                 img.onload = () => {
-                    state.imgSrc = img.src;
-                    state.imgWidth = img.width;
-                    state.imgHeight = img.height;
+                    state.imgSrc = img.src; state.imgWidth = img.width; state.imgHeight = img.height;
                     render();
                 };
                 img.src = evt.target.result;
@@ -404,7 +378,25 @@
             reader.readAsDataURL(file);
         });
 
-        // 2. 监听滑块
+        function loadLocalFont(inputEl, fontFamilyName) {
+            inputEl.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const fontFace = new FontFace(fontFamilyName, evt.target.result);
+                    fontFace.load().then(loadedFace => {
+                        document.fonts.add(loadedFace);
+                        render();
+                        alert(fontFamilyName + " 字体加载成功！");
+                    }).catch(err => { console.error(err); alert("字体加载失败"); });
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        loadLocalFont(els.fontVInput, 'VerticalFont');
+        loadLocalFont(els.fontHInput, 'SubtitleFont');
+
         Object.keys(els.inputs).forEach(key => {
             els.inputs[key].addEventListener('input', e => {
                 let val = parseInt(e.target.value);
@@ -415,55 +407,77 @@
             });
         });
 
-        // 3. 监听文本输入
-        els.textInput.addEventListener('input', e => {
-            state.text = e.target.value;
+        els.wmX.addEventListener('input', e => { state.wmX = parseInt(e.target.value); els.displays.wmX.innerText = state.wmX + '%'; render(); });
+        els.wmY.addEventListener('input', e => { state.wmY = parseInt(e.target.value); els.displays.wmY.innerText = state.wmY + '%'; render(); });
+        els.wmSize.addEventListener('input', e => { state.wmSize = parseInt(e.target.value); els.displays.wmSize.innerText = state.wmSize + 'px'; render(); });
+        els.wmColor.addEventListener('input', e => { state.wmColor = e.target.value; render(); });
+        els.wmInput.addEventListener('input', e => { state.wmText = e.target.value; render(); });
+        
+        els.wmLH.addEventListener('input', e => { 
+            let val = parseInt(e.target.value) / 10; 
+            state.wmLineHeight = val; 
+            els.displays.wmLH.innerText = val; 
+            render(); 
+        });
+        els.wmLS.addEventListener('input', e => { 
+            state.wmLetterSpacing = parseInt(e.target.value); 
+            els.displays.wmLS.innerText = state.wmLetterSpacing + 'px'; 
+            render(); 
+        });
+
+        els.textInput.addEventListener('input', e => { state.text = e.target.value; render(); });
+        Array.from(els.splitRadios).forEach(radio => {
+            radio.addEventListener('change', e => { if(e.target.checked) { state.splitMode = e.target.value; render(); } });
+        });
+
+        els.textInput.addEventListener('paste', e => {
+            if (!els.autoCleanMd.checked) return;
+            e.preventDefault();
+            let pasteText = (e.clipboardData || window.clipboardData).getData('text');
+            pasteText = stripMarkdown(pasteText);
+            const start = els.textInput.selectionStart;
+            const end = els.textInput.selectionEnd;
+            const currentText = els.textInput.value;
+            const newText = currentText.substring(0, start) + pasteText + currentText.substring(end);
+            els.textInput.value = newText; state.text = newText;
+            els.textInput.selectionStart = els.textInput.selectionEnd = start + pasteText.length;
             render();
         });
 
-        els.splitByLine.addEventListener('change', e => {
-            state.splitByLine = e.target.checked;
-            render();
-        });
+        function stripMarkdown(text) {
+            return text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/__(.*?)__/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/_(.*?)_/g, '$1')
+                .replace(/^#+\s+/gm, '').replace(/^[\*\-]\s+/gm, '').replace(/\[(.*?)\]\(.*?\)/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/^>\s+/gm, '');
+        }
 
-        // 4. 颜色同步逻辑
-        els.colorPicker.addEventListener('input', e => {
-            state.textColor = e.target.value;
-            els.colorHex.value = e.target.value; // 同步到 hex 输入框
-            render();
-        });
-
+        els.colorPicker.addEventListener('input', e => { state.textColor = e.target.value; els.colorHex.value = e.target.value; render(); });
         els.colorHex.addEventListener('input', e => {
             let val = e.target.value;
-            if (val.startsWith('#') && (val.length === 7 || val.length === 4)) {
-                state.textColor = val;
-                els.colorPicker.value = val; // 同步到 picker
-                render();
-            }
+            if (val.startsWith('#') && (val.length === 7 || val.length === 4)) { state.textColor = val; els.colorPicker.value = val; render(); }
         });
 
-        // 5. 核心渲染逻辑
         function render() {
             if (!state.imgSrc) {
-                els.canvas.innerHTML = '<div style="padding:40px; color:#666; text-align:center;">请先上传图片</div>';
+                els.canvas.innerHTML = '<div style="padding:40px; color:#666; text-align:center;">⬅️ 请先在左侧上传底图</div>';
                 return;
             }
-
             els.canvas.innerHTML = ''; 
             
-            // 分割逻辑
-            let groups;
-            if (state.splitByLine) {
-                groups = state.text.split('\n').filter(line => line.trim() !== '');
-            } else {
-                groups = state.text.split(/\n\s*\n/); 
+            let groups = [];
+            const rawLines = state.text.split('\n'); 
+            if (state.splitMode === 'paragraph') groups = state.text.split(/\n\s*\n/);
+            else if (state.splitMode === 'line') groups = rawLines.filter(l => l.trim() !== '');
+            else if (state.splitMode === 'two-lines') {
+                const cleanLines = rawLines.filter(l => l.trim() !== '');
+                for (let i = 0; i < cleanLines.length; i += 2) {
+                    let chunk = cleanLines[i];
+                    if (cleanLines[i+1]) chunk += '\n' + cleanLines[i+1];
+                    groups.push(chunk);
+                }
             }
 
-            // 剪裁计算
             const cropTopPct = state.cropTop / 100;
             const cropBottomPct = state.cropBottom / 100;
             if (cropTopPct + cropBottomPct >= 0.95) return;
-
             const aspectRatio = state.imgHeight / state.imgWidth;
             const visibleRatio = 1 - cropTopPct - cropBottomPct;
             const firstFramePadding = (aspectRatio * visibleRatio) * 100; 
@@ -471,11 +485,10 @@
             const slicePadding = (aspectRatio * visibleRatio * slicePctOfVisible) * 100;
 
             groups.forEach((groupText, index) => {
-                if (!groupText.trim() && index > 0 && !state.splitByLine) return;
+                if (!groupText.trim() && index > 0 && state.splitMode === 'paragraph') return;
 
                 const frame = document.createElement('div');
                 frame.className = 'frame';
-                
                 const img = document.createElement('img');
                 img.src = state.imgSrc;
 
@@ -483,66 +496,59 @@
                 subLayer.className = 'subtitle-layer';
                 subLayer.style.bottom = state.textBottom + 'px';
 
-                // 渲染文字行 (智能字号判断)
                 const lines = groupText.split('\n');
                 lines.forEach(line => {
                     if(!line.trim()) return;
                     const p = document.createElement('p');
                     p.className = 'sub-line';
                     p.textContent = line;
-                    
-                    // 核心逻辑：如果包含中文，用大号字；否则用小号字
-                    if (/[\u4e00-\u9fa5]/.test(line)) {
-                        p.style.fontSize = state.fontSizeCN + 'px';
-                    } else {
-                        p.style.fontSize = state.fontSizeEN + 'px';
-                    }
-                    
+                    if (/[\u4e00-\u9fa5]/.test(line)) p.style.fontSize = state.fontSizeCN + 'px';
+                    else p.style.fontSize = state.fontSizeEN + 'px';
                     p.style.color = state.textColor;
                     subLayer.appendChild(p);
                 });
 
+                if (index === 0 && state.wmText.trim()) {
+                    const wm = document.createElement('div');
+                    wm.className = 'watermark-layer';
+                    wm.textContent = state.wmText;
+                    wm.style.right = state.wmX + '%';
+                    wm.style.top = state.wmY + '%';
+                    wm.style.fontSize = state.wmSize + 'px';
+                    wm.style.color = state.wmColor;
+                    wm.style.lineHeight = state.wmLineHeight;
+                    wm.style.letterSpacing = state.wmLetterSpacing + 'px';
+                    
+                    frame.appendChild(wm);
+                }
+
                 if (index === 0) {
-                    // 第一帧
                     frame.style.paddingBottom = firstFramePadding + '%';
                     img.style.transform = `translateY(-${state.cropTop}%)`;
                 } else {
-                    // 切片
                     frame.style.paddingBottom = slicePadding + '%';
                     const sliceHeightRealPct = visibleRatio * slicePctOfVisible;
                     const translateY = (1 - cropBottomPct - sliceHeightRealPct) * 100;
                     img.style.transform = `translateY(-${translateY}%)`;
                 }
-
                 frame.appendChild(img);
                 frame.appendChild(subLayer);
                 els.canvas.appendChild(frame);
             });
         }
 
-        // 6. 下载
         function generateImage() {
             if (!state.imgSrc) return;
             els.loading.style.display = 'flex';
-
             setTimeout(() => {
-                const target = els.canvas;
-                html2canvas(target, {
-                    scale: 2.5, 
-                    backgroundColor: "#000",
-                    useCORS: true,
-                    scrollY: -window.scrollY
-                }).then(canvas => {
+                html2canvas(els.canvas, { scale: 2.5, backgroundColor: "#000", useCORS: true, scrollY: -window.scrollY })
+                .then(canvas => {
                     const link = document.createElement('a');
-                    link.download = 'Momo_Subtitle_' + Date.now() + '.jpg';
+                    link.download = 'Momo_Movie_' + Date.now() + '.jpg';
                     link.href = canvas.toDataURL('image/jpeg', 0.92);
                     link.click();
                     els.loading.style.display = 'none';
-                }).catch(err => {
-                    console.error(err);
-                    alert("生成失败，请重试");
-                    els.loading.style.display = 'none';
-                });
+                }).catch(() => { alert("生成失败"); els.loading.style.display = 'none'; });
             }, 100);
         }
     </script>
